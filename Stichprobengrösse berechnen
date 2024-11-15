@@ -1,0 +1,63 @@
+##################################################################################
+#### Sticprobenumfang für die Durchschnittlich am meisten verwendete Ressource####
+##################################################################################
+
+import statsmodels.stats.power as smp
+
+def berechne_stichprobenumfang(alpha, power, effekt_groesse, anzahl_kategorien, erwartete_wahrscheinlichkeiten):
+    """
+    Berechnet den Stichprobenumfang für einen Chi-Quadrat-Anpassungstest, basierend auf erwarteten Wahrscheinlichkeiten.
+    
+    Parameter:
+    - alpha: Signifikanzniveau (z.B. 0.05 für 5%)
+    - power: Teststärke (z.B. 0.8 für 80%)
+    - effekt_groesse: Effektgröße (Cohen's w), 0.3 (mittel)
+    - anzahl_kategorien: ( 5 für Holz, Lehm, Erz, Getreide, Schaf)
+    - erwartete_wahrscheinlichkeiten: Liste von Wahrscheinlichkeiten für jede Kategorie 
+    
+    Rückgabe:
+    - Benötigter Stichprobenumfang
+    """
+    chi2_power = smp.GofChisquarePower()
+    sample_size = chi2_power.solve_power(effect_size=effekt_groesse, nobs=None, alpha=alpha, power=power, n_bins=anzahl_kategorien)
+    
+    return sample_size
+
+# Parameter definieren
+alpha = 0.05  # Signifikanzniveau
+power = 0.8        # Teststärke
+effekt_groesse = 0.3  # Moderate Effektgröße (Cohen's w)
+anzahl_kategorien = 5 # z.B. 5 Kategorien in Catan (Holz, Lehm, Erz, Getreide, Schaf)
+
+# Wahrscheinlichkeiten für die Ressourcen
+erwartete_wahrscheinlichkeiten = [4/18, 3/18, 4/18, 3/18, 4/18]
+
+# Berechnung ausführen
+benoetigte_stichproben = berechne_stichprobenumfang(alpha, power, effekt_groesse, anzahl_kategorien, erwartete_wahrscheinlichkeiten)
+print(f"Benötigte Stichprobenanzahl: {benoetigte_stichproben:.0f}")
+
+
+###################################################################
+#######Stichprobengrösse für Erz-weizen und Lehm-Holz strategie ###
+###################################################################
+
+from statsmodels.stats.power import NormalIndPower
+
+# Definiere die Parameter
+effect_size = 0.3  # Effektgröße (Schätzung des Unterschieds zwischen den beiden Strategien)
+alpha = 0.05  # Signifikanzniveau
+power = 0.80  # Power (80%)
+neutral_zone_percentage = 0.40  # Prozentsatz der neutralen Zone
+group_percentage = 2/3  # Prozentsatz für beide Gruppen (Erz-Weizen und Holz-Lehm)
+
+# Berechne die Stichprobengröße für beiden Gruppen
+power_analysis = NormalIndPower()
+
+# Berechnung des Stichprobenumfangs für beide Gruppen (hier 60% der Gesamtstichprobe)
+sample_size_for_group = power_analysis.solve_power(effect_size=effect_size, alpha=alpha, power=power)
+
+
+total_sample_size = sample_size_for_group / group_percentage  # Aufteilen auf 60% da die neutrale Zone nicht getestet wird. 
+
+print(f"Benötigte Stichprobengröße für jede der beiden Gruppen (Erz-Weizen und Holz-Lehm): {sample_size_for_group}")
+print(f"Gesamtstichprobengröße unter Berücksichtigung der neutralen Zone: {total_sample_size}")
